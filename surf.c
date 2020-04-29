@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 
 #include <gdk/gdk.h>
@@ -35,7 +36,7 @@
 #define LENGTH(x)               (sizeof(x) / sizeof(x[0]))
 #define CLEANMASK(mask)         (mask & (MODKEY|GDK_SHIFT_MASK))
 
-enum { AtomFind, AtomGo, AtomUri, AtomLast };
+enum { AtomFind, AtomGo, AtomUri, AtomSearch, AtomLast };
 
 enum {
 	OnDoc   = WEBKIT_HIT_TEST_RESULT_CONTEXT_DOCUMENT,
@@ -140,6 +141,11 @@ typedef struct {
 	regex_t re;
 } SiteSpecific;
 
+typedef struct {
+	char *prefix;
+	char *f;
+} SearchEngine;
+
 /* Surf */
 static void usage(void);
 static void setup(void);
@@ -175,6 +181,7 @@ static void spawn(Client *c, const Arg *a);
 static void msgext(Client *c, char type, const Arg *a);
 static void destroyclient(Client *c);
 static void cleanup(void);
+
 
 /* GTK/WebKit */
 static WebKitWebView *newview(Client *c, WebKitWebView *rv);
@@ -232,6 +239,9 @@ static void togglecookiepolicy(Client *c, const Arg *a);
 static void toggleinspector(Client *c, const Arg *a);
 static void find(Client *c, const Arg *a);
 
+static void search(Client *c, Arg *a);
+static void externplayer(Client *c, const Arg *a);
+
 /* Buttons */
 static void clicknavigate(Client *c, const Arg *a, WebKitHitTestResult *h);
 static void clicknewwindow(Client *c, const Arg *a, WebKitHitTestResult *h);
@@ -253,6 +263,8 @@ static Parameter *curconfig;
 static int modparams[ParameterLast];
 static int pipein[2], pipeout[2];
 char *argv0;
+
+/* Regex. */
 
 static ParamName loadtransient[] = {
 	Certificate,
@@ -328,6 +340,7 @@ setup(void)
 	atoms[AtomFind] = XInternAtom(dpy, "_SURF_FIND", False);
 	atoms[AtomGo] = XInternAtom(dpy, "_SURF_GO", False);
 	atoms[AtomUri] = XInternAtom(dpy, "_SURF_URI", False);
+	atoms[AtomSearch] = XInternAtom(dpy, "_SURF_SEARCH", False);
 
 	gtk_init(NULL, NULL);
 
@@ -1316,6 +1329,11 @@ processx(GdkXEvent *e, GdkEvent *event, gpointer d)
 				loaduri(c, &a);
 
 				return GDK_FILTER_REMOVE;
+			} else if (ev->atom == atoms[AtomSearch]) {
+				a.v = getatom(c, AtomSearch);
+				search(c, &a);
+
+				return GDK_FILTER_REMOVE;
 			}
 		}
 	}
@@ -1968,6 +1986,67 @@ clickexternplayer(Client *c, const Arg *a, WebKitHitTestResult *h)
 	Arg arg;
 
 	arg = (Arg)VIDEOPLAY(webkit_hit_test_result_get_media_uri(h));
+	spawn(c, &arg);
+}
+
+void
+search(Client *c, Arg *a)
+{
+	Arg arg;
+	regex_t regex;
+	char msg[BUFSIZ];
+	gboolean gotf = FALSE;
+	int i, reti;
+	const char *r = a->v;
+	char *f, *url,
+		 *pr = r,
+		 *sregex = "^[[:space:]]*[^[:space:]]\\+\\([:space:]\\+[^[:space:]]\\+)\\+[:space:]*$";
+
+	if (!g_strcmp0(r, ""))
+		return;
+
+	if (regcomp(&regex, r, REG_EXTENDED)) {
+		fprintf(stderr, "search: regcomp: Could not compile regex '%s'.\n", sregex);
+		return;
+	}
+	switch (reti=regexec(&regex, r, 0, NULL, 0)) {
+		case 0:           break;
+		case REG_NOMATCH: fprintf(stderr, "search: regexec: No matches found.\n");return;
+		default:
+			regerror(reti, &regex, msg, sizeof(msg));
+			fprintf(stderr, "search: regexec: Regex match failed '%s'.\n", msg);
+			return;
+	}
+
+	/* Passing start spaces. */
+	while(isspace(*pr)) ++pr;
+
+	for (i = 0; i < LENGTH(sengines); ++i) {
+		if (g_str_has_prefix(pr, sengines[i].prefix)) {
+			/* Getting format. */
+			f = sengines[i].f;
+			gotf = TRUE;
+			break;
+		}
+	}
+	if (!gotf){
+		fprintf(stderr, "search: Could not find prefix.");
+		return;
+	}
+
+	/* Passing prefix and spaces. */
+	while (!isspace(*pr++));
+	while (isspace(*pr)) ++pr;
+
+	arg.v = url = g_strdup_printf(f, pr);
+	loaduri(c, &arg);
+	g_free(url);
+}
+
+void
+externplayer(Client *c, const Arg *a)
+{
+	Arg arg = (Arg)VIDEOPLAY(geturi(c));
 	spawn(c, &arg);
 }
 

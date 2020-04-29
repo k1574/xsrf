@@ -1,0 +1,8 @@
+xsrf - surf, but with additions.
+Compilation needs some packages. Read "mkconfig", edit it.
+After it you can install.
+Installation:
+	# mk install
+About usage read the manual(xsrf.1).
+
+Suckless - thank you! I love your software.
