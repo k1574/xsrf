@@ -1,0 +1,75 @@
+#!/bin/env rc
+# The complete browser script by herc, xtab and xsrf.
+
+if(test $#* -eq 0)
+	exec xemb -e xsrf
+
+fn usage {
+	echo usage: $0 [-c cookie_file] [options_1] [url_1] ... [options_n] [url_n] >[1=2]
+	echo '	'-e and -c options are prohibited for obvious reason >[1=2]
+	xsrf -h
+}
+
+cookiefile = $home/lib/xsrf/cookies.txt
+
+get = 1
+if(test $#* -ge 2)
+	while(~ $get 1)
+		switch($1){
+			case -c
+				cookiefile = $2
+				shift; shift
+			case *
+				get = 0
+		}
+
+
+fn getargs {
+	args = ()
+	got = 0
+	while(~ $got 0 && test $#* -ne 0 ){
+		switch($1){
+		case -*
+			switch($1){
+			case -b -B -d -D -f -F -g -G -k -K -m -M -n -N -p -P -s -S -t -T -x -X -i -I
+				if(test $#* -lt 1){ usage ; exit 1 }
+				args = ($args $1)
+				shift
+			case -C -r -u -z
+				if(test $#* -lt 2){ usage ; exit 1}
+				args = ($args $1 $2)
+				shift; shift
+			case -e -c
+				echo $0: $1: option is prohibited in script>[1=2]
+				usage; exit 1
+			case *
+				echo $0: $1: no such option >[1=2]
+				usage ; exit 1
+			}
+		case *
+			got = 1
+			args = ($args $1)
+		}
+	}
+	~ $got 0 && exit 1
+	echo $args
+	exit 0
+}
+
+
+i = 0
+while(test $#* -ne 0 ){
+	i = `{echo $i + 1 | bc}
+	args_$i = `{getargs $*} || exit 1
+	for(i in `{seq `{eval echo '$#args_'$i}}) shift
+}
+
+XEMBED = `{xtab -c -s -d -r 2 xsrf -e win } || exit 1
+for(j in `{seq $i}){
+	args = `{eval echo '$args_'$j}
+	xsrf -e $XEMBED -c $cookiefile $args &
+}
+echo $XEMBED
+
+wait
+

@@ -1,0 +1,25 @@
+# xsrf
+xsrf - X surf the web.
+
+
+## Description
+
+Xsrf is the implementation of one tab in a browser by itself.
+Other features can be added by other programs. (witch runtime dependencies)
+
+
+## Runtime dependencies
+
+These programs bring the REAL functionality into xsrf:
+
+ * xtab - tabs support |  https://github.com/k1574/xtab
+ * xtrm && curl - file downloading | https://github.com/k1574/xtrm
+ * mpv - watching videos | ?(lazy)
+
+
+## Installation
+
+See the https://github.com/k1574/install
+
+
+Suckless - thank you! I love your software.
