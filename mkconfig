@@ -1,37 +1,16 @@
-<$HOME/app/mk/inc/config
-CC = $GCC
-LD = $CC
-# Change to yes to make it compile and install web extension library.
-NAME = xsrf
-SCRIPT = xtor xweb
+<$MKINCDIR/config
+<$MKINCDIR/std/usegcc
+PROGNAME = xsrf
 VERSION = 2.0
-USR = /usr
-# /usr/local
-USRLOC = $USR/local
-# Libraries.
-LIBROOT = $USRLOC/lib
-LIBDIR = $LIBROOT/$NAME
-# X11.
 X11INC = `{pkg-config --cflags x11}
-X11LIB = `{pkg-config --libs x11}
+X11LIBS = `{pkg-config --libs x11}
 GTKINC = `{pkg-config --cflags gtk+-3.0 gcr-3 webkit2gtk-4.0}
-GTKLIB = `{pkg-config --libs gtk+-3.0 gcr-3 webkit2gtk-4.0}
-# WE = WebExt.
-WEINC = `{pkg-config --cflags webkit2gtk-4.0 webkit2gtk-web-extension-4.0}
-WELIB = `{pkg-config --libs webkit2gtk-4.0 webkit2gtk-web-extension-4.0}
+GTKLIB = `{pkg-config --libs  gtk+-3.0 gcr-3 webkit2gtk-4.0}
 GTHREADLIB = -lgthread-2.0
-INC = $X11INC $GTKINC
-LIB = $X11LIB $GTKLIB $GTHREADLIB
-CPPFLAGS = $INC\
-	 -DVERSION=\"$VERSION\" -DWEBEXTDIR=\"$LIBDIR\" \
+INCS = $X11INC $GTKINC
+LIBS = $X11LIB $GTKLIB $GTHREADLIB
+DEFS = -DVERSION=\"$VERSION\" -DWEBEXTDIR=\"$LIBDIR\" \
 	-D_DEFAULT_SOURCE -DGCR_API_SUBJECT_TO_CHANGE \
 	-DNAME=\"$NAME\"
-CFLAGS =  $CPPFLAGS 
-LDFLAGS = $LIB
-# Shared object flag. After it the name of shared object file is supposed to be substitute.
-SONAME = -Wl,-soname
-SOCFLAGS = -shared
-# WebExtension flags.
-WECPPFLAGS = $WEINC
-WECFLAGS = -fPIC
-WELDFLAGS = $WELIB $LDFLAGS
+CFILES = main.c common.c
+HFILES = common.h arg.h
