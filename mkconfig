@@ -13,4 +13,4 @@ DEFS = -DVERSION=\"$VERSION\" -DWEBEXTDIR=\"$LIBDIR\" \
 	-D_DEFAULT_SOURCE -DGCR_API_SUBJECT_TO_CHANGE \
 	-DNAME=\"$NAME\"
 CFILES = main.c common.c
-HFILES = common.h arg.h
+HFILES = common.h arg.h config.h

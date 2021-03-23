@@ -1437,7 +1437,7 @@ createwindow(Client *c)
 		w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
 		wmstr = g_path_get_basename(argv0);
-		gtk_window_set_wmclass(GTK_WINDOW(w), wmstr, "Surf");
+		gtk_window_set_role(GTK_WINDOW(w), "Surf");
 		g_free(wmstr);
 
 		wmstr = g_strdup_printf("%s[%lu]", "Surf", c->pageid);
@@ -2005,7 +2005,8 @@ search(Client *c, Arg *a)
 	char msg[BUFSIZ];
 	gboolean gotf = FALSE;
 	int i, reti;
-	char *r = a->v;
+	char r[BUFSIZ];
+	strncpy(r, a->v, sizeof(r));
 	char *f, *url,
 		 *pr = r,
 		 *sregex = "^[[:space:]]*[^[:space:]]\\+\\([:space:]\\+[^[:space:]]\\+)\\+[:space:]*$";
@@ -2014,15 +2015,15 @@ search(Client *c, Arg *a)
 		return;
 
 	if (regcomp(&regex, r, REG_EXTENDED)) {
-		fprintf(stderr, "%s: search: regcomp: Could not compile regex '%s'.\n", argv0, sregex);
+		fprintf(stderr, "%s: search: regcomp: could not compile regex '%s'.\n", argv0, sregex);
 		return;
 	}
 	switch (reti=regexec(&regex, r, 0, NULL, 0)) {
 		case 0:           break;
-		case REG_NOMATCH: fprintf(stderr, "search: regexec: No matches found.\n");return;
+		case REG_NOMATCH: fprintf(stderr, "search: regexec: no matches found.\n");return;
 		default:
 			regerror(reti, &regex, msg, sizeof(msg));
-			fprintf(stderr, "%s: search: regexec: Regex match failed '%s'.\n", argv0, msg);
+			fprintf(stderr, "%s: search: regexec: regex match failed '%s'.\n", argv0, msg);
 			return;
 	}
 
@@ -2038,7 +2039,7 @@ search(Client *c, Arg *a)
 		}
 	}
 	if (!gotf){
-		fprintf(stderr, "%s: search: Could not find prefix.\n", argv0);
+		fprintf(stderr, "%s: search: could not find prefix.\n", argv0);
 		return;
 	}
 
