@@ -133,10 +133,12 @@ static SearchEngine sengines[] = {
 	{  "g", "https://www.google.com/search?q=%s" },
 	{  "ddg", "https://duckduckgo.com/?q=%s"},
 	{  "y", "https://search.yahoo.com/search?p=%s"},
-	{  "wpe", "https://en.wikipedia.org/wiki/%s"},
-	{  "wde", "https://en.wiktionary.org/wiki/%s"},
-	{  "wpr", "https://ru.wikipedia.org/wiki/%s"},
-	{  "wdr", "https://ru.wiktionary.org/wiki/%s"},
+	{  "wpen", "https://en.wikipedia.org/wiki/%s"},
+	{  "wden", "https://en.wiktionary.org/wiki/%s"},
+	{  "wpru", "https://ru.wikipedia.org/wiki/%s"},
+	{  "wdru", "https://ru.wiktionary.org/wiki/%s"},
+	{  "wpeo", "https://eo.wikipedia.org/wiki/%s"},
+	{  "wdru", "https://eo.wiktionary.org/wiki/%s"},
 } ;
 
 #define MODKEY GDK_CONTROL_MASK
